@@ -16,6 +16,7 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +24,7 @@ import java.util.List;
 @NoArgsConstructor
 public class AccountOpsImpl {
     @Autowired
-    TopicCreation topicCreation;
+    KafkaTopicOps kafkaTopicOps;
     private KafkaTemplate<String, Accounts> accountsKafkaTemplate;
 
     private void createAccount(UserCreation userCreation ){
@@ -33,17 +34,15 @@ public class AccountOpsImpl {
         accountsKafkaTemplate.send(message);
     }
 
-    public ResponseEntity<ResponseObject> createUser(String userId){
-        List<String> msg=new ArrayList<>();
-        HttpStatus httpStatus = null;
-        if(StringUtils.isEmpty(userId)){
-            msg.add(ResponseConstants.USERID_CANNOT_BE_NULL);
-            httpStatus = HttpStatus.BAD_REQUEST;
-        }else{
-            topicCreation.createTopic(userId);
-            msg.add(ResponseConstants.USER_CREATION_SUCCESS);
-            httpStatus = HttpStatus.OK;
-        }
-        return ResponseUtility.buildResponse(msg,httpStatus,null);
-    }
+//    public ResponseEntity<ResponseObject> createAccount(String userId,String country){
+//        List<String> msg=new ArrayList<>();
+//        HttpStatus httpStatus = null;
+//        if(StringUtils.isEmpty((userId)) || StringUtils.isEmpty(country)){
+//            msg.add(ResponseConstants.INSUFFICIENT_INPUT_PARAMETER);
+//            httpStatus = HttpStatus.BAD_REQUEST;
+//        }else{
+//
+//        }
+//    }
+
 }

@@ -2,14 +2,17 @@ package net.springboot.synpulse8challenges.controllers;
 
 import lombok.NoArgsConstructor;
 import net.springboot.synpulse8challenges.kafka.AccountOpsImpl;
+import net.springboot.synpulse8challenges.kafka.KafkaTopicOps;
+import net.springboot.synpulse8challenges.kafka.UserOps;
 import net.springboot.synpulse8challenges.model.ResponseObject;
 import net.springboot.synpulse8challenges.model.UserCreation;
+import net.springboot.synpulse8challenges.utilities.ResponseUtility;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1/account")
@@ -17,10 +20,21 @@ import org.springframework.web.bind.annotation.RestController;
 public class AccountController {
     @Autowired
     AccountOpsImpl accountOps;
+    @Autowired
+    UserOps userOps;
+    @Autowired
+    KafkaTopicOps kafkaTopicOps;
 
     @PostMapping("/createAccount")
     public ResponseEntity<ResponseObject> createAccount(@RequestBody UserCreation userCreation){
-        ResponseEntity<ResponseObject> response = accountOps.createUser(userCreation.getUserId());
+        ResponseEntity<ResponseObject> response = userOps.createUser(userCreation.getUserId());
+        return response;
+    }
+
+    @GetMapping("/getTopics")
+    public ResponseEntity<ResponseObject> getTopics(){
+        Set<String> topics = kafkaTopicOps.getTopics();
+        ResponseEntity<ResponseObject> response = ResponseUtility.buildResponse(null, HttpStatus.OK,topics);
         return response;
     }
 }
