@@ -16,8 +16,10 @@ public interface TransactionConstants {
     String ERROR_DESCRIPTION_UNDEFINED = "Missing Payment Description";
 
     String ERROR_QUERY_USERID_MISSING = "Missing user account";
+    String ERROR_QUERY_ACCOUNT_MISSING = "Missing account number";
     String ERROR_QUERY_USERID_NOT_FOUND = "Unable to find user account";
-    String ERROR_QUERY_ACCOUNT_NOT_FOUND = "Unable to find currency account associated with user";
+    String ERROR_QUERY_ACCOUNT_NOT_FOUND = "Unable to find account";
+    String ERROR_QUERY_USER_ACCOUNT_NOT_FOUND = "Unable to find currency account associated with user";
     String ERROR_QUERY_DATE_FORMAT_INVALID = "Query Date Format Invalid. Please use DD-MM-YYYY format";
     String ERROR_QUERY_DATE_STARTDATE_MISSING = "Missing query Start Date";
     String ERROR_QUERY_DATE_ENDDATE_MISSING = "Missing query End Date";

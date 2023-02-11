@@ -13,4 +13,6 @@ public class TransactionSummary {
   private Map<String,Double> creditInOriginalCurrency;
   private String exchangedCurrency;
   List<Transaction> transactionList;
+  private Integer pageIndex;
+  private Integer pageRecordCount;
 }

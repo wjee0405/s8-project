@@ -1,6 +1,7 @@
 package net.springboot.synpulse8challenges.controllers;
 
 import lombok.NoArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import net.springboot.synpulse8challenges.kafka.AccountOpsImpl;
 import net.springboot.synpulse8challenges.kafka.KafkaTopicOps;
 import net.springboot.synpulse8challenges.kafka.TransactionOpsImpl;
@@ -20,6 +21,7 @@ import java.util.Set;
 @RestController
 @RequestMapping("/api/v1/account")
 @NoArgsConstructor
+@Log4j2
 public class AccountController {
     @Autowired
     AccountOpsImpl accountOps;
@@ -32,6 +34,7 @@ public class AccountController {
 
     @PostMapping("/createUser")
     public ResponseEntity<ResponseObject> createUser(@RequestBody UserCreation userCreation){
+        log.info("URL:{} ,Request Body:{} {}","createUser",userCreation);
         ResponseEntity<ResponseObject> response = userOps.createUser(userCreation.getUserId());
         return response;
     }
@@ -39,12 +42,14 @@ public class AccountController {
     @PostMapping("/createCurrencyAccount")
     public ResponseEntity<ResponseObject> createCurrencyAccount(@RequestParam("userId") String userId,
                                                                 @RequestParam("country") String country){
+        log.info("URL:{} ,Request Params:{} {}","createCurrencyAccount",userId,country);
         ResponseEntity<ResponseObject> response = accountOps.createAccount(userId,country);
         return response;
     }
 
     @GetMapping("/getCurrencyAccounts")
     public ResponseEntity<ResponseObject> getCurrencyAccounts(@RequestParam("userId")String userId){
+        log.info("URL:{} ,Request Param:{}","getCurrencyAccounts",userId);
         ResponseEntity<ResponseObject> response = accountOps.findCurrencyAccounts(userId);
         return response;
     }
@@ -58,13 +63,22 @@ public class AccountController {
 
     @PostMapping("/sendTransaction")
     public ResponseEntity<ResponseObject> sendTransaction(@RequestBody Transaction transaction){
+        log.info("URL:{} ,Request Body:{}","sendTransaction",transaction);
         ResponseEntity<ResponseObject> response = transactionOps.createTransaction(transaction);
         return response;
     }
 
     @GetMapping("/findTransactionByUser")
     public ResponseEntity<ResponseObject> findTransactionByUser(TransactionQuery transactionQuery){
+        log.info("URL:{} ,Request Param:{}","findTransactionByUser",transactionQuery);
         ResponseEntity<ResponseObject> response = transactionOps.findTransactionSummaryByUser(transactionQuery);
+        return response;
+    }
+
+    @GetMapping("/findTransactionByAccount")
+    public ResponseEntity<ResponseObject> findTransactionByAccount(TransactionQuery transactionQuery){
+        log.info("URL:{} ,Request Param:{}","findTransactionByAccount",transactionQuery);
+        ResponseEntity<ResponseObject> response = transactionOps.findTransactionSummaryByAccount(transactionQuery);
         return response;
     }
 }

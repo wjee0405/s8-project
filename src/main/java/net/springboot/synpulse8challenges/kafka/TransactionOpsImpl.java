@@ -14,6 +14,9 @@ import net.springboot.synpulse8challenges.utilities.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -30,6 +33,7 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.xml.ws.Response;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -123,6 +127,64 @@ public class TransactionOpsImpl {
         transactionRepositories.save(transaction);
     }
 
+    public ResponseEntity<ResponseObject> findTransactionSummaryByAccount(TransactionQuery transactionQuery){
+        List<String> msg = new ArrayList<>();
+        HttpStatus httpStatus;
+        TransactionSummary transactionSummary = new TransactionSummary();
+
+        List<String> errorMessage = validateUtility.validateTransactionQueries(transactionQuery);
+        List<Transaction> transactionList = new ArrayList<>();
+        int pageIndex = !ObjectUtils.isEmpty(transactionQuery.getPageIndex())?transactionQuery.getPageIndex():0;
+        int pageRecordCount = !ObjectUtils.isEmpty(transactionQuery.getPageRecordCount())?transactionQuery.getPageRecordCount():1;
+
+        if(CollectionUtils.isEmpty(errorMessage)) {
+            String accountNo = transactionQuery.getAccountNo();
+            String startDateValue = transactionQuery.getTransactionStartDateValue();
+            String endDateValue = transactionQuery.getTransactionEndDateValue();
+
+            if(StringUtils.isEmpty(accountNo)){
+                msg.add(TransactionConstants.ERROR_QUERY_ACCOUNT_MISSING);
+                httpStatus = HttpStatus.BAD_REQUEST;
+            }else{
+                Query query = new Query();
+                query.addCriteria(Criteria.where(TransactionConstants.ACCOUNT_NO).is(accountNo));
+                if(!StringUtils.isEmpty(startDateValue)){
+                    Date startDate = DateUtility.parseDateFromString(startDateValue,
+                            DateFormatConstants.DATE_FORMAT_DD_MM_YYYY);
+                    Date endDate = DateUtility.parseDateFromString(endDateValue,
+                            DateFormatConstants.DATE_FORMAT_DD_MM_YYYY);
+                    Criteria criteria = new Criteria();
+                    Criteria startDateCriteria = Criteria.where(TransactionConstants.TRANSACTION_DATE).gte(startDate);
+                    Criteria endDateCriteria = Criteria.where(TransactionConstants.TRANSACTION_DATE).lte(endDate);
+
+                    criteria.andOperator(Arrays.asList(startDateCriteria,endDateCriteria));
+                    query.addCriteria(criteria);
+                }
+
+                Pageable pageable = PageRequest.of(pageIndex, pageRecordCount, Sort.Direction.ASC, TransactionConstants.TRANSACTION_DATE);
+                query.with(pageable);
+
+                transactionList = mongoTemplate.find(query,Transaction.class);
+                if(!CollectionUtils.isEmpty(transactionList)){
+                    transactionSummary = calculateTransactionSummary(transactionList);
+                    transactionSummary.setPageIndex(pageIndex);
+                    transactionSummary.setPageRecordCount(pageRecordCount);
+                    msg.add(TransactionConstants.TRANSACTION_QUERY_SUCCESSFUL);
+                    httpStatus = HttpStatus.OK;
+                }else{
+                    msg.add(TransactionConstants.TRANSACTION_QUERY_NOT_FOUND);
+                    httpStatus = HttpStatus.NOT_FOUND;
+                }
+            }
+        }else{
+            msg = errorMessage;
+            httpStatus = HttpStatus.BAD_REQUEST;
+        }
+
+        return ResponseUtility.buildResponse(msg,httpStatus,transactionSummary);
+
+    }
+
     public ResponseEntity<ResponseObject> findTransactionSummaryByUser(TransactionQuery transactionQuery){
         List<String> msg = new ArrayList<>();
         HttpStatus httpStatus;
@@ -130,6 +192,8 @@ public class TransactionOpsImpl {
 
         List<String> errorMessage = validateUtility.validateTransactionQueries(transactionQuery);
         List<Transaction> transactionList = new ArrayList<>();
+        int pageIndex = !ObjectUtils.isEmpty(transactionQuery.getPageIndex())?transactionQuery.getPageIndex():0;
+        int pageRecordCount = !ObjectUtils.isEmpty(transactionQuery.getPageRecordCount())?transactionQuery.getPageRecordCount():100;
 
         if(CollectionUtils.isEmpty(errorMessage)){
             String userID = transactionQuery.getUserId();
@@ -141,7 +205,7 @@ public class TransactionOpsImpl {
             }else{
                 List<Account> accounts = accountOps.findAllCurrencyAccounts(userID);
                 if(CollectionUtils.isEmpty(accounts)){
-                    msg.add(TransactionConstants.ERROR_QUERY_ACCOUNT_NOT_FOUND);
+                    msg.add(TransactionConstants.ERROR_QUERY_USER_ACCOUNT_NOT_FOUND);
                     httpStatus = HttpStatus.BAD_REQUEST;
                 }else{
                     Query query = new Query();
@@ -160,9 +224,15 @@ public class TransactionOpsImpl {
                         criteria.andOperator(Arrays.asList(startDateCriteria,endDateCriteria));
                         query.addCriteria(criteria);
                     }
+
+                    Pageable pageable = PageRequest.of(pageIndex, pageRecordCount, Sort.Direction.ASC, TransactionConstants.TRANSACTION_DATE);
+                    query.with(pageable);
+
                     transactionList = mongoTemplate.find(query,Transaction.class);
                     if(!CollectionUtils.isEmpty(transactionList)){
                         transactionSummary = calculateTransactionSummary(transactionList);
+                        transactionSummary.setPageIndex(pageIndex);
+                        transactionSummary.setPageRecordCount(pageRecordCount);
                         msg.add(TransactionConstants.TRANSACTION_QUERY_SUCCESSFUL);
                         httpStatus = HttpStatus.OK;
                     }else{
@@ -243,6 +313,7 @@ public class TransactionOpsImpl {
         UriComponentsBuilder uri = UriComponentsBuilder.fromHttpUrl(externalUrlConfig.getExchangeRateUrl())
                 .queryParam("base",base)
                 .queryParam("symbols",targetCurrency);
+        log.info("Calling exchange rate API");
         String exchangeRateResponse = (String) restService.callExternalAPI(uri.toUriString(),null,null, HttpMethod.GET,String.class);
         if(!ObjectUtils.isEmpty(exchangeRateResponse)){
             ObjectMapper mapper = new ObjectMapper();
@@ -251,6 +322,7 @@ public class TransactionOpsImpl {
                 JsonNode rates = map.get("rates");
                 if(!ObjectUtils.isEmpty(rates)){
                     result = rates.get(targetCurrency).asDouble();
+                    log.info("Rate for {} from {} is {} on {}",targetCurrency,base,result, LocalDate.now());
                 }
             }catch(Exception ex){
                 log.error("Fail to parse exchange rate",ex);
