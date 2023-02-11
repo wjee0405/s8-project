@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 public class KafkaConsumerConfigs {
 
     private String bootStrapServers;
-    private String group;
+    private String groupId;
     private String autoOffsetReset;
-    private String keySerializer;
+    private String keyDeserializer;
     private String valueDeserializer;
 }
