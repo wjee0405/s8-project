@@ -59,7 +59,7 @@ public class ValidateUtility {
 
         if(!StringUtils.isEmpty(query.getTransactionEndDateValue())){
             if(!DateUtility.checkDateFormatValid(query.getTransactionEndDateValue(), DateFormatConstants.DATE_FORMAT_DD_MM_YYYY)){
-                errorMessage.add(TransactionConstants.ERROR_TRANSACTION_DATE_FORMAT_INVALID);
+                errorMessage.add(TransactionConstants.ERROR_QUERY_DATE_FORMAT_INVALID);
             }
             if(StringUtils.isEmpty(query.getTransactionStartDateValue())){
                 errorMessage.add(TransactionConstants.ERROR_QUERY_DATE_STARTDATE_MISSING);

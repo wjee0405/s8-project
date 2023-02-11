@@ -12,6 +12,5 @@ public class TransactionSummary {
   private Map<String,Double> debitInOriginalCurrency;
   private Map<String,Double> creditInOriginalCurrency;
   private String exchangedCurrency;
-  private Double exchangeRate;
   List<Transaction> transactionList;
 }

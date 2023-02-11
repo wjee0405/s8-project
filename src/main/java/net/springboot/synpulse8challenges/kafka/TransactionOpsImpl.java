@@ -153,9 +153,12 @@ public class TransactionOpsImpl {
                                 DateFormatConstants.DATE_FORMAT_DD_MM_YYYY);
                         Date endDate = DateUtility.parseDateFromString(endDateValue,
                                 DateFormatConstants.DATE_FORMAT_DD_MM_YYYY);
+                        Criteria criteria = new Criteria();
+                        Criteria startDateCriteria = Criteria.where(TransactionConstants.TRANSACTION_DATE).gte(startDate);
+                        Criteria endDateCriteria = Criteria.where(TransactionConstants.TRANSACTION_DATE).lte(endDate);
 
-                        query.addCriteria(Criteria.where(TransactionConstants.TRANSACTION_DATE).gte(startDate));
-                        query.addCriteria((Criteria.where(TransactionConstants.TRANSACTION_DATE).lte(endDate)));
+                        criteria.andOperator(Arrays.asList(startDateCriteria,endDateCriteria));
+                        query.addCriteria(criteria);
                     }
                     transactionList = mongoTemplate.find(query,Transaction.class);
                     if(!CollectionUtils.isEmpty(transactionList)){
@@ -183,11 +186,11 @@ public class TransactionOpsImpl {
         transactionSummary.setTransactionList(transactionList);
 
         List<Transaction> creditTransactions = transactionList.stream()
-                .filter(t -> (t.getAmount() > 0.0)).collect(Collectors.toList());
-        transactionList.removeAll(creditTransactions);
+                .filter(t -> (t.getAmount() >= 0.0)).collect(Collectors.toList());
 
         //Transaction which are debit
-        List<Transaction> debitTransactions = transactionList;
+        List<Transaction> debitTransactions = transactionList.stream()
+                .filter(t -> (t.getAmount() < 0.0)).collect(Collectors.toList());
 
         if (!CollectionUtils.isEmpty(creditTransactions)) {
             Map<String, Double> creditTotal = compileCurrencyTotal(creditTransactions);
@@ -204,7 +207,7 @@ public class TransactionOpsImpl {
             transactionSummary.setDebitInOriginalCurrency(debitTotal);
         }
 
-
+        transactionSummary.setExchangedCurrency("USD");
         return transactionSummary;
     }
 
@@ -213,9 +216,9 @@ public class TransactionOpsImpl {
         for(Transaction transaction:transactionList){
             if(!currencyTotal.containsKey(transaction.getCurrency())){
                 currencyTotal.putIfAbsent(transaction.getCurrency(),
-                        transaction.getAmount());
+                        Math.abs(transaction.getAmount()));
             }else{
-                Double totalAmount = currencyTotal.get(transaction.getCurrency()) + transaction.getAmount();
+                Double totalAmount = currencyTotal.get(transaction.getCurrency()) + Math.abs(transaction.getAmount());
                 currencyTotal.put(transaction.getCurrency(),
                         totalAmount);
             }
@@ -228,7 +231,7 @@ public class TransactionOpsImpl {
 
         for( Map.Entry<String,Double> entry : currencyTotal.entrySet()){
             Double exchangeRateForCurrency = getExchangeRate(entry.getKey(),"USD");
-            Double exchangeValue = Math.abs(entry.getValue()) * exchangeRateForCurrency;
+            Double exchangeValue = entry.getValue() * exchangeRateForCurrency;
             result += exchangeValue;
         }
 
