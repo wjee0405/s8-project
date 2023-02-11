@@ -3,6 +3,7 @@ package net.springboot.synpulse8challenges.utilities;
 import net.springboot.synpulse8challenges.constants.DateFormatConstants;
 import net.springboot.synpulse8challenges.constants.TransactionConstants;
 import net.springboot.synpulse8challenges.kafka.AccountOpsImpl;
+import net.springboot.synpulse8challenges.kafka.UserOps;
 import net.springboot.synpulse8challenges.model.Transaction;
 import net.springboot.synpulse8challenges.model.TransactionQuery;
 import org.apache.commons.lang3.StringUtils;
@@ -17,6 +18,8 @@ import java.util.List;
 public class ValidateUtility {
     @Autowired
     AccountOpsImpl accountOps;
+    @Autowired
+    UserOps userOps;
 
     public List<String> validateTransaction(Transaction transaction) {
         List<String> errorMessage = new ArrayList<>();
@@ -47,12 +50,30 @@ public class ValidateUtility {
         List<String> errorMessage = new ArrayList<>();
         if(!StringUtils.isEmpty(query.getTransactionStartDateValue())){
             if(!DateUtility.checkDateFormatValid(query.getTransactionStartDateValue(), DateFormatConstants.DATE_FORMAT_DD_MM_YYYY)){
-                errorMessage.add(TransactionConstants.ERROR_TRANSACTION_DATE_FORMAT_INVALID);
+                errorMessage.add(TransactionConstants.ERROR_QUERY_DATE_FORMAT_INVALID);
+            }
+            if(StringUtils.isEmpty(query.getTransactionEndDateValue())){
+                errorMessage.add(TransactionConstants.ERROR_QUERY_DATE_ENDDATE_MISSING);
             }
         }
+
         if(!StringUtils.isEmpty(query.getTransactionEndDateValue())){
             if(!DateUtility.checkDateFormatValid(query.getTransactionEndDateValue(), DateFormatConstants.DATE_FORMAT_DD_MM_YYYY)){
                 errorMessage.add(TransactionConstants.ERROR_TRANSACTION_DATE_FORMAT_INVALID);
+            }
+            if(StringUtils.isEmpty(query.getTransactionStartDateValue())){
+                errorMessage.add(TransactionConstants.ERROR_QUERY_DATE_STARTDATE_MISSING);
+            }
+        }
+
+        if(!StringUtils.isEmpty(query.getUserId())){
+            if(!userOps.findUser((query.getUserId()))){
+                errorMessage.add(TransactionConstants.ERROR_QUERY_USERID_NOT_FOUND);
+            }
+        }
+        if(!StringUtils.isEmpty(query.getAccountNo())){
+            if(!accountOps.findCurrencyAccount(query.getAccountNo())){
+                errorMessage.add(TransactionConstants.ERROR_QUERY_ACCOUNT_NOT_FOUND);
             }
         }
 

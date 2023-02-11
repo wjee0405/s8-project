@@ -7,6 +7,7 @@ import net.springboot.synpulse8challenges.kafka.TransactionOpsImpl;
 import net.springboot.synpulse8challenges.kafka.UserOps;
 import net.springboot.synpulse8challenges.model.ResponseObject;
 import net.springboot.synpulse8challenges.model.Transaction;
+import net.springboot.synpulse8challenges.model.TransactionQuery;
 import net.springboot.synpulse8challenges.model.UserCreation;
 import net.springboot.synpulse8challenges.utilities.ResponseUtility;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +59,12 @@ public class AccountController {
     @PostMapping("/sendTransaction")
     public ResponseEntity<ResponseObject> sendTransaction(@RequestBody Transaction transaction){
         ResponseEntity<ResponseObject> response = transactionOps.createTransaction(transaction);
+        return response;
+    }
+
+    @GetMapping("/findTransactionByUser")
+    public ResponseEntity<ResponseObject> findTransactionByUser(TransactionQuery transactionQuery){
+        ResponseEntity<ResponseObject> response = transactionOps.findTransactionSummaryByUser(transactionQuery);
         return response;
     }
 }

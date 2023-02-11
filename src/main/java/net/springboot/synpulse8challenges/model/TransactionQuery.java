@@ -8,4 +8,6 @@ public class TransactionQuery {
   private String accountNo;
   private String transactionStartDateValue;
   private String transactionEndDateValue;
+  private String pageIndex;
+  private String pageRecordCount;
 }
