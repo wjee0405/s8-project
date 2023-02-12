@@ -26,7 +26,7 @@ jobs:
           command: mvn install
   docker-build-push:
     docker:
-      - image: cimg/openjdk:8.0.362
+      - image: circleci/docker@2.1.1
         auth: 
           username: $DOCKER_USER
           password: $DOCKER_PASSWORD
