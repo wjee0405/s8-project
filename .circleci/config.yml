@@ -49,6 +49,9 @@ jobs:
         - run:
             name: Push
             command: docker push $DOCKER_USER/s8project:latest
+        - store_artifacts:
+            path: /home/circleci/project/target/
+            destination: /target
 
 # Invoke jobs via workflows
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
