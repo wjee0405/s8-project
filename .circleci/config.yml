@@ -26,7 +26,7 @@ jobs:
           command: mvn install
   docker-build-push:
     docker:
-      - image: circleci/docker@2.1.1
+      - image: docker:17.05.0-ce-git
         auth: 
           username: $DOCKER_USER
           password: $DOCKER_PASSWORD
