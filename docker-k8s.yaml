@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: docker-k8s-s8-project-deployment
+  labels:
+    app: docker-k8s-s8-project
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: docker-k8s-s8-project
+  template:
+    metadata:
+      labels:
+        app: docker-k8s-s8-project
+    spec:
+      containers:
+        - name: docker-k8s-s8-project
+          image: wjlee0405/s8project
+          ports:
+            - containerPort: 8080
