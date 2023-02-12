@@ -4,16 +4,12 @@ import lombok.extern.log4j.Log4j2;
 import net.springboot.synpulse8challenges.config.ExternalUrlConfig;
 import net.springboot.synpulse8challenges.config.KafkaTopicConfigs;
 import net.springboot.synpulse8challenges.constants.TransactionConstants;
-import net.springboot.synpulse8challenges.model.ResponseObject;
-import net.springboot.synpulse8challenges.model.Transaction;
-import net.springboot.synpulse8challenges.model.TransactionQuery;
-import net.springboot.synpulse8challenges.model.TransactionSummary;
+import net.springboot.synpulse8challenges.model.*;
 import net.springboot.synpulse8challenges.repositories.TransactionRepositories;
 import net.springboot.synpulse8challenges.utilities.DataProvider;
 import net.springboot.synpulse8challenges.utilities.RestService;
 import net.springboot.synpulse8challenges.utilities.ValidateUtility;
 import org.apache.commons.lang3.StringUtils;
-import org.bson.json.JsonObject;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -137,6 +133,54 @@ public class TransactionOpsImplTest {
         when(restService.callExternalAPI(any(),any(),any(),
                 any(),any(Class.class))).thenReturn( prepareExchangeRateResponse("USD"));
         result = transactionOps.findTransactionSummaryByAccount(testData);
+        Assertions.assertEquals(TransactionConstants.TRANSACTION_QUERY_SUCCESSFUL,result.getBody().getMessage().get(0));
+        Assertions.assertEquals(HttpStatus.OK,result.getStatusCode());
+    }
+
+    @Test
+    public void testFindTransactionSummaryByUser(){
+        when(validateUtility.validateTransactionQueries(any())).thenReturn(Arrays.asList("123"));
+        TransactionQuery testData = new TransactionQuery();
+        ResponseEntity<ResponseObject> result = transactionOps.findTransactionSummaryByUser(testData);
+        Assertions.assertEquals(Arrays.asList("123"),result.getBody().getMessage());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST,result.getStatusCode());
+
+        Mockito.reset(validateUtility);
+        testData = DataProvider.prepareTransactionQuery("01-01-2022","01-01-2022",
+                null,"TRUE", 1,5);
+        result = transactionOps.findTransactionSummaryByUser(testData);
+        Assertions.assertEquals(TransactionConstants.ERROR_QUERY_USERID_MISSING,result.getBody().getMessage().get(0));
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST,result.getStatusCode());
+
+        when(accountOps.findAllCurrencyAccounts(any())).thenReturn(Arrays.asList());
+        testData = DataProvider.prepareTransactionQuery("01-01-2022","01-01-2022",
+                "TRUE","TRUE", 1,5);
+        result = transactionOps.findTransactionSummaryByUser(testData);
+        Assertions.assertEquals(TransactionConstants.ERROR_QUERY_USER_ACCOUNT_NOT_FOUND,result.getBody().getMessage().get(0));
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST,result.getStatusCode());
+
+        Mockito.reset(validateUtility);
+        Account mockedAccount = DataProvider.prepareAccount("1","123");
+        when(accountOps.findAllCurrencyAccounts(any())).thenReturn(Arrays.asList(mockedAccount));
+        when(mongoTemplate.find(any(Query.class),any(Class.class))).thenReturn(Arrays.asList());
+        result = transactionOps.findTransactionSummaryByUser(testData);
+        Assertions.assertEquals(TransactionConstants.TRANSACTION_QUERY_NOT_FOUND,result.getBody().getMessage().get(0));
+        Assertions.assertEquals(HttpStatus.NOT_FOUND,result.getStatusCode());
+
+        Mockito.reset(mongoTemplate);
+        Transaction mockedTransaction1 = DataProvider.prepareTransactionData(-111d,"1","1","1");
+        mockedTransaction1.setCurrency("GBP");
+        Transaction mockedTransaction2 = DataProvider.prepareTransactionData(111d,"2","2","2");
+        mockedTransaction2.setCurrency("JPY");
+        Transaction mockedTransaction3 = DataProvider.prepareTransactionData(111d,"1","1","1");
+        mockedTransaction1.setCurrency("GBP");
+        List<Transaction> mockedTransactionList = Arrays.asList(
+                mockedTransaction1, mockedTransaction2,mockedTransaction3);
+
+        when(mongoTemplate.find(any(Query.class),any(Class.class))).thenReturn(mockedTransactionList);
+        when(restService.callExternalAPI(any(),any(),any(),
+                any(),any(Class.class))).thenReturn( prepareExchangeRateResponse("USD"));
+        result = transactionOps.findTransactionSummaryByUser(testData);
         Assertions.assertEquals(TransactionConstants.TRANSACTION_QUERY_SUCCESSFUL,result.getBody().getMessage().get(0));
         Assertions.assertEquals(HttpStatus.OK,result.getStatusCode());
     }

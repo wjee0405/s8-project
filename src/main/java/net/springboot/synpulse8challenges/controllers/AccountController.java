@@ -3,20 +3,15 @@ package net.springboot.synpulse8challenges.controllers;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.springboot.synpulse8challenges.kafka.AccountOpsImpl;
-import net.springboot.synpulse8challenges.kafka.KafkaTopicOps;
 import net.springboot.synpulse8challenges.kafka.TransactionOpsImpl;
 import net.springboot.synpulse8challenges.kafka.UserOps;
 import net.springboot.synpulse8challenges.model.ResponseObject;
 import net.springboot.synpulse8challenges.model.Transaction;
 import net.springboot.synpulse8challenges.model.TransactionQuery;
 import net.springboot.synpulse8challenges.model.UserCreation;
-import net.springboot.synpulse8challenges.utilities.ResponseUtility;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1/account")
@@ -27,8 +22,6 @@ public class AccountController {
     AccountOpsImpl accountOps;
     @Autowired
     UserOps userOps;
-    @Autowired
-    KafkaTopicOps kafkaTopicOps;
     @Autowired
     TransactionOpsImpl transactionOps;
 
@@ -51,13 +44,6 @@ public class AccountController {
     public ResponseEntity<ResponseObject> getCurrencyAccounts(@RequestParam("userId")String userId){
         log.info("URL:{} ,Request Param:{}","getCurrencyAccounts",userId);
         ResponseEntity<ResponseObject> response = accountOps.findCurrencyAccounts(userId);
-        return response;
-    }
-
-    @GetMapping("/getTopics")
-    public ResponseEntity<ResponseObject> getTopics(){
-        Set<String> topics = kafkaTopicOps.getTopics();
-        ResponseEntity<ResponseObject> response = ResponseUtility.buildResponse(null, HttpStatus.OK,topics);
         return response;
     }
 

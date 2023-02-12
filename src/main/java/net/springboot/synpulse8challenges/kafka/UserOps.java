@@ -25,28 +25,12 @@ import java.util.Optional;
 @Service
 @NoArgsConstructor
 public class UserOps {
-
-    @Autowired
-    KafkaTopicOps kafkaTopicOps;
     @Autowired
     UserRepositories userRepositories;
     @Autowired
     KafkaTopicConfigs kafkaTopicConfigs;
     @Autowired
     private KafkaTemplate<String, Account> accountsKafkaTemplate;
-
-//    public boolean findUser(String userId) {
-//        boolean result = Boolean.FALSE;
-//        String userAccount = PrefixConstants.USER_PREFIX + userId;
-//        Set<String> userList = kafkaTopicOps.getTopics();
-//        userList = userList.stream()
-//                .filter(p -> p.startsWith(PrefixConstants.USER_PREFIX))
-//                .collect(Collectors.toSet());
-//        if (userList.contains(userAccount)) {
-//            result = Boolean.TRUE;
-//        }
-//        return result;
-//    }
 
     public boolean findUser(String userId){
         Optional<UserCreation> user = userRepositories.findByUserId(userId);

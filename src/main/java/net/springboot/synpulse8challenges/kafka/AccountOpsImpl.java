@@ -29,8 +29,6 @@ import java.util.*;
 @Log4j2
 public class AccountOpsImpl {
     @Autowired
-    KafkaTopicOps kafkaTopicOps;
-    @Autowired
     KafkaTopicConfigs kafkaTopicConfigs;
     @Autowired
     UserOps userOps;

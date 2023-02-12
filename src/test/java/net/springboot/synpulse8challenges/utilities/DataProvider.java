@@ -1,9 +1,18 @@
 package net.springboot.synpulse8challenges.utilities;
 
+import net.springboot.synpulse8challenges.model.Account;
 import net.springboot.synpulse8challenges.model.Transaction;
 import net.springboot.synpulse8challenges.model.TransactionQuery;
 
 public class DataProvider {
+
+    public static Account prepareAccount(String accountOwner, String accountNo){
+        Account account = new Account();
+        account.setAccountOwner(accountOwner);
+        account.setAccountNo(accountNo);
+
+        return account;
+    }
 
     public static TransactionQuery prepareTransactionQuery(
             String startDate, String endDate, String userId, String accountNo
