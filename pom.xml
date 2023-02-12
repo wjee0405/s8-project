@@ -117,8 +117,8 @@
 					</execution>
 				</executions>
 			</plugin>
-
 		</plugins>
+		<finalName>s8-project</finalName>
 	</build>
 
 </project>
