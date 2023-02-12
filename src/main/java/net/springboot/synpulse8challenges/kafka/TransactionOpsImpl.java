@@ -12,7 +12,6 @@ import net.springboot.synpulse8challenges.model.*;
 import net.springboot.synpulse8challenges.repositories.TransactionRepositories;
 import net.springboot.synpulse8challenges.utilities.*;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +31,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.xml.ws.Response;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -41,8 +39,7 @@ import java.util.stream.Collectors;
 @Log4j2
 @NoArgsConstructor
 public class TransactionOpsImpl {
-    @Autowired
-    UserOps userOps;
+
     @Autowired
     AccountOpsImpl accountOps;
     @Autowired
