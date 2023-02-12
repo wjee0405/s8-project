@@ -27,6 +27,10 @@ jobs:
       - store_artifacts:
           path: /home/circleci/project/target/
           destination: /target
+      - persist_to_workspace:
+          root: workspace
+          paths:
+            - /home/circleci/project/target
   docker-build-push:
     docker:
       - image: docker:17.05.0-ce-git
@@ -34,6 +38,8 @@ jobs:
           username: $DOCKER_USER
           password: $DOCKER_PASSWORD
     steps:
+        - attach_workspace:
+            at: /home/circleci/project/target
         - checkout
         - setup_remote_docker
         - run:
