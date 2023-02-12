@@ -24,6 +24,8 @@ jobs:
       - run:
           name: Build
           command: mvn install
+      - store_artifacts:
+          path: /target
   docker-build-push:
     docker:
       - image: docker:17.05.0-ce-git
