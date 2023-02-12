@@ -26,9 +26,9 @@ jobs:
           name: Build
           command: mvn install
       - persist_to_workspace:
-          root: target
+          root: /home/circleci/project/
           paths:
-            - *
+            - target
   docker-build-push:
     docker:
       - image: docker:17.05.0-ce-git
@@ -37,7 +37,7 @@ jobs:
           password: $DOCKER_PASSWORD
     steps:
         - attach_workspace:
-            at: target
+            at: /home/circleci/project/target
         - checkout
         - setup_remote_docker
         - run:
