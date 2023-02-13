@@ -1,10 +1,10 @@
-package net.springboot.synpulse8challenges.kafka;
+package net.springboot.synpulse8challenges.service;
 
 import net.springboot.synpulse8challenges.config.KafkaTopicConfigs;
 import net.springboot.synpulse8challenges.constants.ResponseConstants;
 import net.springboot.synpulse8challenges.model.Account;
 import net.springboot.synpulse8challenges.model.ResponseObject;
-import net.springboot.synpulse8challenges.model.UserCreation;
+import net.springboot.synpulse8challenges.model.User;
 import net.springboot.synpulse8challenges.repositories.UserRepositories;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,8 +44,8 @@ public class UserOpsTest {
         boolean result = userOps.findUser("123");
         Assertions.assertFalse(result);
 
-        UserCreation userCreation = new UserCreation();
-        when(userRepositories.findByUserId(any())).thenReturn(Optional.of(userCreation));
+        User user = new User();
+        when(userRepositories.findByUserId(any())).thenReturn(Optional.of(user));
         result = userOps.findUser("123");
         Assertions.assertTrue(result);
     }
@@ -56,8 +56,8 @@ public class UserOpsTest {
         Assertions.assertEquals(ResponseConstants.USERID_CANNOT_BE_NULL, result.getBody().getMessage().get(0));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
 
-        UserCreation userCreation = new UserCreation();
-        when(userRepositories.findByUserId(any())).thenReturn(Optional.of(userCreation));
+        User user = new User();
+        when(userRepositories.findByUserId(any())).thenReturn(Optional.of(user));
         result = userOps.createUser("123");
         Assertions.assertEquals(ResponseConstants.USER_EXISTS, result.getBody().getMessage().get(0));
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());

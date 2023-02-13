@@ -2,8 +2,8 @@ package net.springboot.synpulse8challenges.utilities;
 
 import net.springboot.synpulse8challenges.constants.DateFormatConstants;
 import net.springboot.synpulse8challenges.constants.TransactionConstants;
-import net.springboot.synpulse8challenges.kafka.AccountOpsImpl;
-import net.springboot.synpulse8challenges.kafka.UserOps;
+import net.springboot.synpulse8challenges.service.AccountOps;
+import net.springboot.synpulse8challenges.service.UserOps;
 import net.springboot.synpulse8challenges.model.Transaction;
 import net.springboot.synpulse8challenges.model.TransactionQuery;
 import org.apache.commons.lang3.StringUtils;
@@ -17,7 +17,7 @@ import java.util.List;
 @Service
 public class ValidateUtility {
     @Autowired
-    AccountOpsImpl accountOps;
+    AccountOps accountOps;
     @Autowired
     UserOps userOps;
 

@@ -2,7 +2,7 @@ package net.springboot.synpulse8challenges.config;
 
 import net.springboot.synpulse8challenges.model.Account;
 import net.springboot.synpulse8challenges.model.Transaction;
-import net.springboot.synpulse8challenges.model.UserCreation;
+import net.springboot.synpulse8challenges.model.User;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -38,12 +38,12 @@ public class ConsumerFactoryConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, UserCreation> userCreationConcurrentKafkaListenerContainerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String, User> userCreationConcurrentKafkaListenerContainerFactory() {
         Map<String, Object> configs = consumerConfigs();
         configs.put(JsonDeserializer.VALUE_DEFAULT_TYPE,
-                UserCreation.class);
-        ConsumerFactory<String, UserCreation> consumerFactory = new DefaultKafkaConsumerFactory<>(configs);
-        ConcurrentKafkaListenerContainerFactory<String, UserCreation> factory =
+                User.class);
+        ConsumerFactory<String, User> consumerFactory = new DefaultKafkaConsumerFactory<>(configs);
+        ConcurrentKafkaListenerContainerFactory<String, User> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory);
         return factory;

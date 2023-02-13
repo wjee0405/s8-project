@@ -1,8 +1,8 @@
 package net.springboot.synpulse8challenges.utilities;
 
 import net.springboot.synpulse8challenges.constants.TransactionConstants;
-import net.springboot.synpulse8challenges.kafka.AccountOpsImpl;
-import net.springboot.synpulse8challenges.kafka.UserOps;
+import net.springboot.synpulse8challenges.service.AccountOps;
+import net.springboot.synpulse8challenges.service.UserOps;
 import net.springboot.synpulse8challenges.model.Transaction;
 import net.springboot.synpulse8challenges.model.TransactionQuery;
 import org.junit.jupiter.api.Assertions;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
 
 public class ValidateUtilityTest {
     @Mock
-    AccountOpsImpl accountOpsImps;
+    AccountOps accountOpsImps;
     @Mock
     UserOps userOps;
     @InjectMocks

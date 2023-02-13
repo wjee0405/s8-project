@@ -1,4 +1,4 @@
-package net.springboot.synpulse8challenges.kafka;
+package net.springboot.synpulse8challenges.service;
 
 import lombok.extern.log4j.Log4j2;
 import net.springboot.synpulse8challenges.config.ExternalUrlConfig;
@@ -33,9 +33,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @Log4j2
-public class TransactionOpsImplTest {
+public class TransactionOpsTest {
     @Mock
-    AccountOpsImpl accountOps;
+    AccountOps accountOps;
     @Mock
     KafkaTopicConfigs kafkaTopicConfigs;
     @Mock
@@ -51,7 +51,7 @@ public class TransactionOpsImplTest {
     @Mock
     RestService restService;
     @InjectMocks
-    TransactionOpsImpl transactionOps;
+    TransactionOps transactionOps;
 
     @BeforeEach
     public void setUp() {

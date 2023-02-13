@@ -3,13 +3,13 @@ package net.springboot.synpulse8challenges.controllers;
 import io.swagger.annotations.ApiOperation;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import net.springboot.synpulse8challenges.kafka.AccountOpsImpl;
-import net.springboot.synpulse8challenges.kafka.TransactionOpsImpl;
-import net.springboot.synpulse8challenges.kafka.UserOps;
+import net.springboot.synpulse8challenges.service.AccountOps;
+import net.springboot.synpulse8challenges.service.TransactionOps;
+import net.springboot.synpulse8challenges.service.UserOps;
 import net.springboot.synpulse8challenges.model.ResponseObject;
 import net.springboot.synpulse8challenges.model.Transaction;
 import net.springboot.synpulse8challenges.model.TransactionQuery;
-import net.springboot.synpulse8challenges.model.UserCreation;
+import net.springboot.synpulse8challenges.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,18 +20,18 @@ import org.springframework.web.bind.annotation.*;
 @Log4j2
 public class AccountController {
     @Autowired
-    AccountOpsImpl accountOps;
+    AccountOps accountOps;
     @Autowired
     UserOps userOps;
     @Autowired
-    TransactionOpsImpl transactionOps;
+    TransactionOps transactionOps;
 
     @PostMapping("/createUser")
     @ApiOperation(value = "Create user based on ID",
             notes = "Provide userId inside UserCreation Class and call Creation API. Creation is sent to Kafka")
-    public ResponseEntity<ResponseObject> createUser(@RequestBody UserCreation userCreation) {
-        log.info("URL:{} ,Request Body:{} {}", "createUser", userCreation);
-        ResponseEntity<ResponseObject> response = userOps.createUser(userCreation.getUserId());
+    public ResponseEntity<ResponseObject> createUser(@RequestBody User user) {
+        log.info("URL:{} ,Request Body:{} {}", "createUser", user);
+        ResponseEntity<ResponseObject> response = userOps.createUser(user.getUserId());
         return response;
     }
 

@@ -1,4 +1,4 @@
-package net.springboot.synpulse8challenges.kafka;
+package net.springboot.synpulse8challenges.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,10 +38,10 @@ import java.util.stream.Collectors;
 @Service
 @Log4j2
 @NoArgsConstructor
-public class TransactionOpsImpl {
+public class TransactionOps {
 
     @Autowired
-    AccountOpsImpl accountOps;
+    AccountOps accountOps;
     @Autowired
     KafkaTopicConfigs kafkaTopicConfigs;
     @Autowired

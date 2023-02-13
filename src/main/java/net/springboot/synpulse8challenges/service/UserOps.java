@@ -1,11 +1,11 @@
-package net.springboot.synpulse8challenges.kafka;
+package net.springboot.synpulse8challenges.service;
 
 import lombok.NoArgsConstructor;
 import net.springboot.synpulse8challenges.config.KafkaTopicConfigs;
 import net.springboot.synpulse8challenges.constants.ResponseConstants;
 import net.springboot.synpulse8challenges.model.Account;
 import net.springboot.synpulse8challenges.model.ResponseObject;
-import net.springboot.synpulse8challenges.model.UserCreation;
+import net.springboot.synpulse8challenges.model.User;
 import net.springboot.synpulse8challenges.repositories.UserRepositories;
 import net.springboot.synpulse8challenges.utilities.ResponseUtility;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +33,7 @@ public class UserOps {
     private KafkaTemplate<String, Account> accountsKafkaTemplate;
 
     public boolean findUser(String userId) {
-        Optional<UserCreation> user = userRepositories.findByUserId(userId);
+        Optional<User> user = userRepositories.findByUserId(userId);
         return (user.isPresent());
     }
 
@@ -49,9 +49,9 @@ public class UserOps {
                 msg.add(ResponseConstants.USER_EXISTS);
                 httpStatus = HttpStatus.BAD_REQUEST;
             } else {
-                UserCreation userCreation = new UserCreation();
-                userCreation.setUserId(userId);
-                Message<UserCreation> message = MessageBuilder.withPayload(userCreation)
+                User user = new User();
+                user.setUserId(userId);
+                Message<User> message = MessageBuilder.withPayload(user)
                         .setHeader(KafkaHeaders.TOPIC, kafkaTopicConfigs.getUsersTopic())
                         .build();
 

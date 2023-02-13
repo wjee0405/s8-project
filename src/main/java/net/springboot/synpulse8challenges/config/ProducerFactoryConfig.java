@@ -2,7 +2,7 @@ package net.springboot.synpulse8challenges.config;
 
 import net.springboot.synpulse8challenges.model.Account;
 import net.springboot.synpulse8challenges.model.Transaction;
-import net.springboot.synpulse8challenges.model.UserCreation;
+import net.springboot.synpulse8challenges.model.User;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -39,9 +39,9 @@ public class ProducerFactoryConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, UserCreation> userKafkaTemplate() {
-        ProducerFactory<String, UserCreation> producerFactory = new DefaultKafkaProducerFactory<>(producerConfig());
-        KafkaTemplate<String, UserCreation> kafkaTemplate = new KafkaTemplate<>(producerFactory);
+    public KafkaTemplate<String, User> userKafkaTemplate() {
+        ProducerFactory<String, User> producerFactory = new DefaultKafkaProducerFactory<>(producerConfig());
+        KafkaTemplate<String, User> kafkaTemplate = new KafkaTemplate<>(producerFactory);
         return kafkaTemplate;
     }
 

@@ -1,9 +1,9 @@
-package net.springboot.synpulse8challenges.kafka;
+package net.springboot.synpulse8challenges.service;
 
 import lombok.extern.log4j.Log4j2;
 import net.springboot.synpulse8challenges.model.Account;
 import net.springboot.synpulse8challenges.model.Transaction;
-import net.springboot.synpulse8challenges.model.UserCreation;
+import net.springboot.synpulse8challenges.model.User;
 import net.springboot.synpulse8challenges.repositories.AccountRepositories;
 import net.springboot.synpulse8challenges.repositories.UserRepositories;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,14 +20,14 @@ public class KafkaListenerOps {
     @Autowired
     AccountRepositories accountRepositories;
     @Autowired
-    TransactionOpsImpl transactionOps;
+    TransactionOps transactionOps;
 
     @KafkaListener(
             topicPartitions = @TopicPartition(topic = "${topic.config.users-topic}", partitions = {"${topic.config.partition}"}),
             containerFactory = "userCreationConcurrentKafkaListenerContainerFactory", id = "userTopicListener")
-    public void consume(UserCreation userCreation) {
-        log.info("Message receive from User Topic:{}", userCreation);
-        userRepositories.save(userCreation);
+    public void consume(User user) {
+        log.info("Message receive from User Topic:{}", user);
+        userRepositories.save(user);
     }
 
     @KafkaListener(

@@ -1,4 +1,4 @@
-package net.springboot.synpulse8challenges.swagger;
+package net.springboot.synpulse8challenges.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

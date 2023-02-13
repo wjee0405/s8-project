@@ -1,4 +1,4 @@
-package net.springboot.synpulse8challenges.kafka;
+package net.springboot.synpulse8challenges.service;
 
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -27,7 +27,7 @@ import java.util.*;
 @Service
 @NoArgsConstructor
 @Log4j2
-public class AccountOpsImpl {
+public class AccountOps {
     @Autowired
     KafkaTopicConfigs kafkaTopicConfigs;
     @Autowired

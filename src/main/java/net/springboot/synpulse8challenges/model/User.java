@@ -5,6 +5,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "User")
 @Data
-public class UserCreation {
+public class User {
     private String userId;
 }

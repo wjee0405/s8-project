@@ -1,4 +1,4 @@
-package net.springboot.synpulse8challenges.kafka;
+package net.springboot.synpulse8challenges.service;
 
 import net.springboot.synpulse8challenges.config.KafkaTopicConfigs;
 import net.springboot.synpulse8challenges.constants.ResponseConstants;
@@ -24,7 +24,7 @@ import java.util.Optional;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-public class AccountOpsImplTest {
+public class AccountOpsTest {
     @Mock
     KafkaTopicConfigs kafkaTopicConfigs;
     @Mock
@@ -34,7 +34,7 @@ public class AccountOpsImplTest {
     @Mock
     AccountRepositories accountRepositories;
     @InjectMocks
-    AccountOpsImpl accountsOps;
+    AccountOps accountsOps;
 
     @BeforeEach
     public void setUp() {

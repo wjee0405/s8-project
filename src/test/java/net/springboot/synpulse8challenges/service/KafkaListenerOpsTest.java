@@ -1,8 +1,8 @@
-package net.springboot.synpulse8challenges.kafka;
+package net.springboot.synpulse8challenges.service;
 
 import net.springboot.synpulse8challenges.model.Account;
 import net.springboot.synpulse8challenges.model.Transaction;
-import net.springboot.synpulse8challenges.model.UserCreation;
+import net.springboot.synpulse8challenges.model.User;
 import net.springboot.synpulse8challenges.repositories.AccountRepositories;
 import net.springboot.synpulse8challenges.repositories.UserRepositories;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,7 +22,7 @@ public class KafkaListenerOpsTest {
     @Mock
     AccountRepositories accountRepositories;
     @Mock
-    TransactionOpsImpl transactionOps;
+    TransactionOps transactionOps;
     @InjectMocks
     KafkaListenerOps kafkaListenerOps;
 
@@ -33,8 +33,8 @@ public class KafkaListenerOpsTest {
 
     @Test
     public void testConsume() {
-        UserCreation userCreation = new UserCreation();
-        kafkaListenerOps.consume(userCreation);
+        User user = new User();
+        kafkaListenerOps.consume(user);
         verify(userRepositories, times(1)).save(any());
     }
 
