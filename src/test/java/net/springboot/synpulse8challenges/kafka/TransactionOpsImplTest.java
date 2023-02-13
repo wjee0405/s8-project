@@ -54,145 +54,145 @@ public class TransactionOpsImplTest {
     TransactionOpsImpl transactionOps;
 
     @BeforeEach
-    public void setUp(){
+    public void setUp() {
         MockitoAnnotations.openMocks(this);
         when(kafkaTopicConfigs.getTransactionsTopic()).thenReturn("topic");
         when(externalUrlConfig.getExchangeRateUrl()).thenReturn("https://www.google.com");
     }
 
     @Test
-    public void testCreateTransaction(){
-        Transaction testData = DataProvider.prepareTransactionData(111d,"account","01-01-2022","description");
+    public void testCreateTransaction() {
+        Transaction testData = DataProvider.prepareTransactionData(111d, "account", "01-01-2022", "description");
         when(validateUtility.validateTransaction(any())).thenReturn(Arrays.asList());
         when(accountOps.findAccountCurrency(any())).thenReturn("USD");
 
         ResponseEntity<ResponseObject> result = transactionOps.createTransaction(testData);
-        Assertions.assertEquals(TransactionConstants.TRANSACTION_SUCCESSFUL,result.getBody().getMessage().get(0));
-        Assertions.assertEquals(HttpStatus.OK,result.getStatusCode());
+        Assertions.assertEquals(TransactionConstants.TRANSACTION_SUCCESSFUL, result.getBody().getMessage().get(0));
+        Assertions.assertEquals(HttpStatus.OK, result.getStatusCode());
 
         when(validateUtility.validateTransaction(any())).thenReturn(Arrays.asList("123"));
         result = transactionOps.createTransaction(testData);
-        Assertions.assertEquals("123",result.getBody().getMessage().get(0));
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST,result.getStatusCode());
+        Assertions.assertEquals("123", result.getBody().getMessage().get(0));
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
     }
 
     @Test
-    public void testSendTransactionToKafka(){
-        Transaction testData = DataProvider.prepareTransactionData(-111d,"account","01-01-2022","description");
+    public void testSendTransactionToKafka() {
+        Transaction testData = DataProvider.prepareTransactionData(-111d, "account", "01-01-2022", "description");
         when(accountOps.findAccountCurrency(any())).thenReturn("USD");
 
-        Transaction result = ReflectionTestUtils.invokeMethod(transactionOps,"sendTransactionToKafka",testData);
+        Transaction result = ReflectionTestUtils.invokeMethod(transactionOps, "sendTransactionToKafka", testData);
 
         Assertions.assertTrue(!StringUtils.isEmpty(result.getTransactionId()));
-        Assertions.assertEquals("USD 111.0-",result.getCurrencyAmount());
-        verify(transactionKafkaTemplate,times(1)).send(any(Message.class));
+        Assertions.assertEquals("USD 111.0-", result.getCurrencyAmount());
+        verify(transactionKafkaTemplate, times(1)).send(any(Message.class));
     }
 
     @Test
-    public void testSaveTransactionFromTopic(){
-        Transaction testData = DataProvider.prepareTransactionData(-111d,"account",
-                "01-01-2022","description","USD 111-");
+    public void testSaveTransactionFromTopic() {
+        Transaction testData = DataProvider.prepareTransactionData(-111d, "account",
+                "01-01-2022", "description", "USD 111-");
 
         transactionOps.saveTransactionFromTopic(testData);
-        verify(transactionRepositories,times(1)).save(any());
+        verify(transactionRepositories, times(1)).save(any());
     }
 
     @Test
-    public void testFindTransactionSummaryByAccount(){
+    public void testFindTransactionSummaryByAccount() {
         when(validateUtility.validateTransactionQueries(any())).thenReturn(Arrays.asList("123"));
         TransactionQuery testData = new TransactionQuery();
         ResponseEntity<ResponseObject> result = transactionOps.findTransactionSummaryByAccount(testData);
-        Assertions.assertEquals(Arrays.asList("123"),result.getBody().getMessage());
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST,result.getStatusCode());
+        Assertions.assertEquals(Arrays.asList("123"), result.getBody().getMessage());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
 
         Mockito.reset(validateUtility);
-        testData = DataProvider.prepareTransactionQuery("01-01-2022","01-01-2022",
-                "TRUE",null, 1,5);
+        testData = DataProvider.prepareTransactionQuery("01-01-2022", "01-01-2022",
+                "TRUE", null, 1, 5);
         result = transactionOps.findTransactionSummaryByAccount(testData);
-        Assertions.assertEquals(TransactionConstants.ERROR_QUERY_ACCOUNT_MISSING,result.getBody().getMessage().get(0));
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST,result.getStatusCode());
+        Assertions.assertEquals(TransactionConstants.ERROR_QUERY_ACCOUNT_MISSING, result.getBody().getMessage().get(0));
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
 
-        testData = DataProvider.prepareTransactionQuery("01-01-2022","01-01-2022",
-                "TRUE","TRUE", 1,5);
-        when(mongoTemplate.find(any(Query.class),any(Class.class))).thenReturn(Arrays.asList());
+        testData = DataProvider.prepareTransactionQuery("01-01-2022", "01-01-2022",
+                "TRUE", "TRUE", 1, 5);
+        when(mongoTemplate.find(any(Query.class), any(Class.class))).thenReturn(Arrays.asList());
         result = transactionOps.findTransactionSummaryByAccount(testData);
-        Assertions.assertEquals(TransactionConstants.TRANSACTION_QUERY_NOT_FOUND,result.getBody().getMessage().get(0));
-        Assertions.assertEquals(HttpStatus.NOT_FOUND,result.getStatusCode());
+        Assertions.assertEquals(TransactionConstants.TRANSACTION_QUERY_NOT_FOUND, result.getBody().getMessage().get(0));
+        Assertions.assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
 
         Mockito.reset(validateUtility);
-        Transaction mockedTransaction1 = DataProvider.prepareTransactionData(-111d,"1","1","1");
+        Transaction mockedTransaction1 = DataProvider.prepareTransactionData(-111d, "1", "1", "1");
         mockedTransaction1.setCurrency("GBP");
-        Transaction mockedTransaction2 = DataProvider.prepareTransactionData(111d,"2","2","2");
+        Transaction mockedTransaction2 = DataProvider.prepareTransactionData(111d, "2", "2", "2");
         mockedTransaction2.setCurrency("JPY");
-        Transaction mockedTransaction3 = DataProvider.prepareTransactionData(111d,"1","1","1");
+        Transaction mockedTransaction3 = DataProvider.prepareTransactionData(111d, "1", "1", "1");
         mockedTransaction1.setCurrency("GBP");
         List<Transaction> mockedTransactionList = Arrays.asList(
-                mockedTransaction1, mockedTransaction2,mockedTransaction3);
+                mockedTransaction1, mockedTransaction2, mockedTransaction3);
 
-        when(mongoTemplate.find(any(Query.class),any(Class.class))).thenReturn(mockedTransactionList);
-        when(restService.callExternalAPI(any(),any(),any(),
-                any(),any(Class.class))).thenReturn( prepareExchangeRateResponse("USD"));
+        when(mongoTemplate.find(any(Query.class), any(Class.class))).thenReturn(mockedTransactionList);
+        when(restService.callExternalAPI(any(), any(), any(),
+                any(), any(Class.class))).thenReturn(prepareExchangeRateResponse("USD"));
         result = transactionOps.findTransactionSummaryByAccount(testData);
-        Assertions.assertEquals(TransactionConstants.TRANSACTION_QUERY_SUCCESSFUL,result.getBody().getMessage().get(0));
-        Assertions.assertEquals(HttpStatus.OK,result.getStatusCode());
+        Assertions.assertEquals(TransactionConstants.TRANSACTION_QUERY_SUCCESSFUL, result.getBody().getMessage().get(0));
+        Assertions.assertEquals(HttpStatus.OK, result.getStatusCode());
     }
 
     @Test
-    public void testFindTransactionSummaryByUser(){
+    public void testFindTransactionSummaryByUser() {
         when(validateUtility.validateTransactionQueries(any())).thenReturn(Arrays.asList("123"));
         TransactionQuery testData = new TransactionQuery();
         ResponseEntity<ResponseObject> result = transactionOps.findTransactionSummaryByUser(testData);
-        Assertions.assertEquals(Arrays.asList("123"),result.getBody().getMessage());
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST,result.getStatusCode());
+        Assertions.assertEquals(Arrays.asList("123"), result.getBody().getMessage());
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
 
         Mockito.reset(validateUtility);
-        testData = DataProvider.prepareTransactionQuery("01-01-2022","01-01-2022",
-                null,"TRUE", 1,5);
+        testData = DataProvider.prepareTransactionQuery("01-01-2022", "01-01-2022",
+                null, "TRUE", 1, 5);
         result = transactionOps.findTransactionSummaryByUser(testData);
-        Assertions.assertEquals(TransactionConstants.ERROR_QUERY_USERID_MISSING,result.getBody().getMessage().get(0));
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST,result.getStatusCode());
+        Assertions.assertEquals(TransactionConstants.ERROR_QUERY_USERID_MISSING, result.getBody().getMessage().get(0));
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
 
         when(accountOps.findAllCurrencyAccounts(any())).thenReturn(Arrays.asList());
-        testData = DataProvider.prepareTransactionQuery("01-01-2022","01-01-2022",
-                "TRUE","TRUE", 1,5);
+        testData = DataProvider.prepareTransactionQuery("01-01-2022", "01-01-2022",
+                "TRUE", "TRUE", 1, 5);
         result = transactionOps.findTransactionSummaryByUser(testData);
-        Assertions.assertEquals(TransactionConstants.ERROR_QUERY_USER_ACCOUNT_NOT_FOUND,result.getBody().getMessage().get(0));
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST,result.getStatusCode());
+        Assertions.assertEquals(TransactionConstants.ERROR_QUERY_USER_ACCOUNT_NOT_FOUND, result.getBody().getMessage().get(0));
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
 
         Mockito.reset(validateUtility);
-        Account mockedAccount = DataProvider.prepareAccount("1","123");
+        Account mockedAccount = DataProvider.prepareAccount("1", "123");
         when(accountOps.findAllCurrencyAccounts(any())).thenReturn(Arrays.asList(mockedAccount));
-        when(mongoTemplate.find(any(Query.class),any(Class.class))).thenReturn(Arrays.asList());
+        when(mongoTemplate.find(any(Query.class), any(Class.class))).thenReturn(Arrays.asList());
         result = transactionOps.findTransactionSummaryByUser(testData);
-        Assertions.assertEquals(TransactionConstants.TRANSACTION_QUERY_NOT_FOUND,result.getBody().getMessage().get(0));
-        Assertions.assertEquals(HttpStatus.NOT_FOUND,result.getStatusCode());
+        Assertions.assertEquals(TransactionConstants.TRANSACTION_QUERY_NOT_FOUND, result.getBody().getMessage().get(0));
+        Assertions.assertEquals(HttpStatus.NOT_FOUND, result.getStatusCode());
 
         Mockito.reset(mongoTemplate);
-        Transaction mockedTransaction1 = DataProvider.prepareTransactionData(-111d,"1","1","1");
+        Transaction mockedTransaction1 = DataProvider.prepareTransactionData(-111d, "1", "1", "1");
         mockedTransaction1.setCurrency("GBP");
-        Transaction mockedTransaction2 = DataProvider.prepareTransactionData(111d,"2","2","2");
+        Transaction mockedTransaction2 = DataProvider.prepareTransactionData(111d, "2", "2", "2");
         mockedTransaction2.setCurrency("JPY");
-        Transaction mockedTransaction3 = DataProvider.prepareTransactionData(111d,"1","1","1");
+        Transaction mockedTransaction3 = DataProvider.prepareTransactionData(111d, "1", "1", "1");
         mockedTransaction1.setCurrency("GBP");
         List<Transaction> mockedTransactionList = Arrays.asList(
-                mockedTransaction1, mockedTransaction2,mockedTransaction3);
+                mockedTransaction1, mockedTransaction2, mockedTransaction3);
 
-        when(mongoTemplate.find(any(Query.class),any(Class.class))).thenReturn(mockedTransactionList);
-        when(restService.callExternalAPI(any(),any(),any(),
-                any(),any(Class.class))).thenReturn( prepareExchangeRateResponse("USD"));
+        when(mongoTemplate.find(any(Query.class), any(Class.class))).thenReturn(mockedTransactionList);
+        when(restService.callExternalAPI(any(), any(), any(),
+                any(), any(Class.class))).thenReturn(prepareExchangeRateResponse("USD"));
         result = transactionOps.findTransactionSummaryByUser(testData);
-        Assertions.assertEquals(TransactionConstants.TRANSACTION_QUERY_SUCCESSFUL,result.getBody().getMessage().get(0));
-        Assertions.assertEquals(HttpStatus.OK,result.getStatusCode());
+        Assertions.assertEquals(TransactionConstants.TRANSACTION_QUERY_SUCCESSFUL, result.getBody().getMessage().get(0));
+        Assertions.assertEquals(HttpStatus.OK, result.getStatusCode());
     }
 
-    private String prepareExchangeRateResponse(String targetCurrency){
+    private String prepareExchangeRateResponse(String targetCurrency) {
         JSONObject currencyObject = new JSONObject();
         JSONObject rateObject = new JSONObject();
-        try{
-            currencyObject.put(targetCurrency,1d);
-            rateObject.put("rates",currencyObject);
-        }catch(Exception ex){
-            log.error("Fail to prepare exchangeRate Response",ex);
+        try {
+            currencyObject.put(targetCurrency, 1d);
+            rateObject.put("rates", currencyObject);
+        } catch (Exception ex) {
+            log.error("Fail to prepare exchangeRate Response", ex);
         }
         return rateObject.toString();
     }

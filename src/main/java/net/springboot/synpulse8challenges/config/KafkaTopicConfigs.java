@@ -9,7 +9,7 @@ import org.springframework.kafka.config.TopicBuilder;
 
 @Data
 @Configuration
-@ConfigurationProperties(prefix="topic.config")
+@ConfigurationProperties(prefix = "topic.config")
 public class KafkaTopicConfigs {
     private String usersTopic;
     private String accountsTopic;
@@ -17,21 +17,21 @@ public class KafkaTopicConfigs {
     private int partition;
 
     @Bean
-    public NewTopic createUserTopic(){
+    public NewTopic createUserTopic() {
         return TopicBuilder.name(usersTopic)
                 .partitions(partition)
                 .build();
     }
 
     @Bean
-    public NewTopic createAccountsTopic(){
+    public NewTopic createAccountsTopic() {
         return TopicBuilder.name(accountsTopic)
                 .partitions(partition)
                 .build();
     }
 
     @Bean
-    public NewTopic createTransactionsTopic(){
+    public NewTopic createTransactionsTopic() {
         return TopicBuilder.name(transactionsTopic)
                 .partitions(partition)
                 .build();

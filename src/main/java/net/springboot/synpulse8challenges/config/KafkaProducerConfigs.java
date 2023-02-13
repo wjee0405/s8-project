@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 @Data
 @Component
-@ConfigurationProperties(prefix="spring.kafka.producer")
-public class KafkaProcuderConfigs {
+@ConfigurationProperties(prefix = "spring.kafka.producer")
+public class KafkaProducerConfigs {
     private String bootStrapServers;
     private String keySerializer;
     private String valueSerializer;

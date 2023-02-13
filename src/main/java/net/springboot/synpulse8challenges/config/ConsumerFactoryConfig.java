@@ -22,7 +22,7 @@ public class ConsumerFactoryConfig {
     @Autowired
     KafkaConsumerConfigs kafkaConsumerConfigs;
 
-    private Map<String, Object> consumerConfigs(){
+    private Map<String, Object> consumerConfigs() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
                 kafkaConsumerConfigs.getBootStrapServers());
@@ -38,7 +38,7 @@ public class ConsumerFactoryConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, UserCreation> userCreationConcurrentKafkaListenerContainerFactory(){
+    public ConcurrentKafkaListenerContainerFactory<String, UserCreation> userCreationConcurrentKafkaListenerContainerFactory() {
         Map<String, Object> configs = consumerConfigs();
         configs.put(JsonDeserializer.VALUE_DEFAULT_TYPE,
                 UserCreation.class);
@@ -50,7 +50,7 @@ public class ConsumerFactoryConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, Account> accountConcurrentKafkaListenerContainerFactory(){
+    public ConcurrentKafkaListenerContainerFactory<String, Account> accountConcurrentKafkaListenerContainerFactory() {
         Map<String, Object> configs = consumerConfigs();
         configs.put(JsonDeserializer.VALUE_DEFAULT_TYPE,
                 Account.class);
@@ -62,7 +62,7 @@ public class ConsumerFactoryConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, Transaction> transactionConcurrentKafkaListenerContainerFactory(){
+    public ConcurrentKafkaListenerContainerFactory<String, Transaction> transactionConcurrentKafkaListenerContainerFactory() {
         Map<String, Object> configs = consumerConfigs();
         configs.put(JsonDeserializer.VALUE_DEFAULT_TYPE,
                 Transaction.class);

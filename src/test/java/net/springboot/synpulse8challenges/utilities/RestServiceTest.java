@@ -1,6 +1,5 @@
 package net.springboot.synpulse8challenges.utilities;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -23,18 +21,18 @@ public class RestServiceTest {
     RestService restService;
 
     @BeforeEach
-    public void setUp(){
+    public void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void testCallExternalAPI(){
+    public void testCallExternalAPI() {
         ResponseEntity<String> mockClass = new ResponseEntity<>("123", HttpStatus.OK);
         ObjectMapper objectMapper = new ObjectMapper();
-        when(restTemplate.exchange(anyString(),any(HttpMethod.class),
-                any(HttpEntity.class),any(Class.class))).thenReturn(mockClass);
+        when(restTemplate.exchange(anyString(), any(HttpMethod.class),
+                any(HttpEntity.class), any(Class.class))).thenReturn(mockClass);
 
-        String result = (String) restService.callExternalAPI("123",null,null,HttpMethod.GET,String.class);
-        Assertions.assertEquals("123",result);
+        String result = (String) restService.callExternalAPI("123", null, null, HttpMethod.GET, String.class);
+        Assertions.assertEquals("123", result);
     }
 }

@@ -13,21 +13,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-public class ProcuderFactoryConfig {
+public class ProducerFactoryConfig {
     @Autowired
-    KafkaProcuderConfigs kafkaProcuderConfigs;
+    KafkaProducerConfigs kafkaProducerConfigs;
 
-    private Map<String, Object> producerConfig(){
+    private Map<String, Object> producerConfig() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(
                 ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,
-                kafkaProcuderConfigs.getBootStrapServers());
+                kafkaProducerConfigs.getBootStrapServers());
         configProps.put(
                 ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
-                kafkaProcuderConfigs.getKeySerializer());
+                kafkaProducerConfigs.getKeySerializer());
         configProps.put(
                 ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
-                kafkaProcuderConfigs.getValueSerializer());
+                kafkaProducerConfigs.getValueSerializer());
         return configProps;
     }
 
@@ -39,14 +39,14 @@ public class ProcuderFactoryConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, UserCreation> userKafkaTemplate(){
+    public KafkaTemplate<String, UserCreation> userKafkaTemplate() {
         ProducerFactory<String, UserCreation> producerFactory = new DefaultKafkaProducerFactory<>(producerConfig());
         KafkaTemplate<String, UserCreation> kafkaTemplate = new KafkaTemplate<>(producerFactory);
         return kafkaTemplate;
     }
 
     @Bean
-    public KafkaTemplate<String, Transaction> transactionKafkaTemplate(){
+    public KafkaTemplate<String, Transaction> transactionKafkaTemplate() {
         ProducerFactory<String, Transaction> producerFactory = new DefaultKafkaProducerFactory<>(producerConfig());
         KafkaTemplate<String, Transaction> kafkaTemplate = new KafkaTemplate<>(producerFactory);
         return kafkaTemplate;

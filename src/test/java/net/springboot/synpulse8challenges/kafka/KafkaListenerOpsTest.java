@@ -27,28 +27,28 @@ public class KafkaListenerOpsTest {
     KafkaListenerOps kafkaListenerOps;
 
     @BeforeEach
-    public void setUp(){
+    public void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void testConsume(){
+    public void testConsume() {
         UserCreation userCreation = new UserCreation();
         kafkaListenerOps.consume(userCreation);
-        verify(userRepositories,times(1)).save(any());
+        verify(userRepositories, times(1)).save(any());
     }
 
     @Test
-    public void testConsumeAccountTopic(){
+    public void testConsumeAccountTopic() {
         Account account = new Account();
         kafkaListenerOps.consumeAccountTopic(account);
-        verify(accountRepositories,times(1)).save(any());
+        verify(accountRepositories, times(1)).save(any());
     }
 
     @Test
-    public void testConsumeTransactionTopic(){
+    public void testConsumeTransactionTopic() {
         Transaction transaction = new Transaction();
         kafkaListenerOps.consumeTransactionTopic(transaction);
-        verify(transactionOps,times(1)).saveTransactionFromTopic(any());
+        verify(transactionOps, times(1)).saveTransactionFromTopic(any());
     }
 }

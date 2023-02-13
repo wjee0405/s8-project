@@ -11,7 +11,7 @@ public interface ResponseConstants {
     String ACCOUNT_NOT_FOUND = "No account is found for user";
     String ACCOUNT_FOUND = "Successfully retrieve account";
 
-    String ACCOUNT_RETRIEVE_SUCCESSFUL ="Account retrieved successful";
+    String ACCOUNT_RETRIEVE_SUCCESSFUL = "Account retrieved successful";
 
     String CURRENCY_NOT_SUPPORTED = "Currency not supported. Please create account in other currency";
 

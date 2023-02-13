@@ -32,27 +32,27 @@ public class UserOps {
     @Autowired
     private KafkaTemplate<String, Account> accountsKafkaTemplate;
 
-    public boolean findUser(String userId){
+    public boolean findUser(String userId) {
         Optional<UserCreation> user = userRepositories.findByUserId(userId);
         return (user.isPresent());
     }
 
-    public ResponseEntity<ResponseObject> createUser(String userId){
-        List<String> msg=new ArrayList<>();
+    public ResponseEntity<ResponseObject> createUser(String userId) {
+        List<String> msg = new ArrayList<>();
         HttpStatus httpStatus = null;
-        if(StringUtils.isEmpty(userId)){
+        if (StringUtils.isEmpty(userId)) {
             msg.add(ResponseConstants.USERID_CANNOT_BE_NULL);
             httpStatus = HttpStatus.BAD_REQUEST;
-        }else{
+        } else {
             boolean userExist = findUser(userId);
-            if(userExist){
+            if (userExist) {
                 msg.add(ResponseConstants.USER_EXISTS);
                 httpStatus = HttpStatus.BAD_REQUEST;
-            }else{
+            } else {
                 UserCreation userCreation = new UserCreation();
                 userCreation.setUserId(userId);
                 Message<UserCreation> message = MessageBuilder.withPayload(userCreation)
-                        .setHeader(KafkaHeaders.TOPIC,kafkaTopicConfigs.getUsersTopic())
+                        .setHeader(KafkaHeaders.TOPIC, kafkaTopicConfigs.getUsersTopic())
                         .build();
 
                 accountsKafkaTemplate.send(message);
@@ -60,6 +60,6 @@ public class UserOps {
                 httpStatus = HttpStatus.CREATED;
             }
         }
-        return ResponseUtility.buildResponse(msg,httpStatus,null);
+        return ResponseUtility.buildResponse(msg, httpStatus, null);
     }
 }

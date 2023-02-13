@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 public class FinancialUtilitiesTest {
 
     @Test
-    public void testIsAmountDebit(){
+    public void testIsAmountDebit() {
         boolean result = FinancialUtilities.isAmountDebit(-1d);
         Assertions.assertTrue(result);
         result = FinancialUtilities.isAmountDebit(100d);

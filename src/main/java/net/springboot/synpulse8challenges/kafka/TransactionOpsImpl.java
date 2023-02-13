@@ -58,36 +58,36 @@ public class TransactionOpsImpl {
     RestService restService;
 
 
-    public ResponseEntity<ResponseObject> createTransaction(Transaction transaction){
+    public ResponseEntity<ResponseObject> createTransaction(Transaction transaction) {
         HttpStatus httpStatus = null;
         String transactionId = null;
         List<String> msg = new ArrayList<>();
         List<String> errorMessage = new ArrayList<>();
         errorMessage = validateUtility.validateTransaction(transaction);
 
-        if(CollectionUtils.isEmpty(errorMessage)){
+        if (CollectionUtils.isEmpty(errorMessage)) {
             sendTransactionToKafka(transaction);
             httpStatus = HttpStatus.OK;
             msg.add(TransactionConstants.TRANSACTION_SUCCESSFUL);
-        }else{
+        } else {
             httpStatus = HttpStatus.BAD_REQUEST;
             msg = errorMessage;
         }
-        return ResponseUtility.buildResponse(msg,httpStatus,transaction);
+        return ResponseUtility.buildResponse(msg, httpStatus, transaction);
     }
 
-    private Transaction sendTransactionToKafka(Transaction transaction){
+    private Transaction sendTransactionToKafka(Transaction transaction) {
         String uuid = UUID.randomUUID().toString();
         transaction.setTransactionId(uuid);
 
         String currencyAmount = accountOps.findAccountCurrency(transaction.getAccountNo()) + " " +
                 Math.abs(transaction.getAmount()) +
-                (FinancialUtilities.isAmountDebit(transaction.getAmount())?"-":"");
+                (FinancialUtilities.isAmountDebit(transaction.getAmount()) ? "-" : "");
         transaction.setCurrencyAmount(currencyAmount);
 
         Message<Transaction> msg = MessageBuilder
                 .withPayload(transaction)
-                .setHeader(KafkaHeaders.TOPIC,kafkaTopicConfigs.getTransactionsTopic())
+                .setHeader(KafkaHeaders.TOPIC, kafkaTopicConfigs.getTransactionsTopic())
                 .build();
 
         transactionKafkaTemplate.send(msg);
@@ -100,52 +100,52 @@ public class TransactionOpsImpl {
                     DateUtility.parseDateFromString(transaction.getValueDate(),
                             DateFormatConstants.DATE_FORMAT_DD_MM_YYYY));
         }
-        try{
-            if(!StringUtils.isEmpty(transaction.getCurrencyAmount())){
-                String currency = transaction.getCurrencyAmount().substring(0,3);
+        try {
+            if (!StringUtils.isEmpty(transaction.getCurrencyAmount())) {
+                String currency = transaction.getCurrencyAmount().substring(0, 3);
                 transaction.setCurrency(currency);
 
                 String moneyValue = transaction.getCurrencyAmount().substring(4);
                 Double amount = 0.0;
-                if(moneyValue.endsWith("-")){
+                if (moneyValue.endsWith("-")) {
                     //Debit value
                     moneyValue = "-" + moneyValue.substring(0,
-                            moneyValue.length()-1);
+                            moneyValue.length() - 1);
                     amount = Double.valueOf(moneyValue);
-                }else{
+                } else {
                     amount = Double.valueOf(moneyValue);
                 }
                 transaction.setAmount(amount);
             }
-        }catch(Exception ex){
-            log.error("Fail to parse currency amount from topic",ex);
+        } catch (Exception ex) {
+            log.error("Fail to parse currency amount from topic", ex);
         }
 
         transactionRepositories.save(transaction);
     }
 
-    public ResponseEntity<ResponseObject> findTransactionSummaryByAccount(TransactionQuery transactionQuery){
+    public ResponseEntity<ResponseObject> findTransactionSummaryByAccount(TransactionQuery transactionQuery) {
         List<String> msg = new ArrayList<>();
         HttpStatus httpStatus;
         TransactionSummary transactionSummary = new TransactionSummary();
 
         List<String> errorMessage = validateUtility.validateTransactionQueries(transactionQuery);
         List<Transaction> transactionList = new ArrayList<>();
-        int pageIndex = !ObjectUtils.isEmpty(transactionQuery.getPageIndex())?transactionQuery.getPageIndex():0;
-        int pageRecordCount = !ObjectUtils.isEmpty(transactionQuery.getPageRecordCount())?transactionQuery.getPageRecordCount():1;
+        int pageIndex = !ObjectUtils.isEmpty(transactionQuery.getPageIndex()) ? transactionQuery.getPageIndex() : 0;
+        int pageRecordCount = !ObjectUtils.isEmpty(transactionQuery.getPageRecordCount()) ? transactionQuery.getPageRecordCount() : 1;
 
-        if(CollectionUtils.isEmpty(errorMessage)) {
+        if (CollectionUtils.isEmpty(errorMessage)) {
             String accountNo = transactionQuery.getAccountNo();
             String startDateValue = transactionQuery.getTransactionStartDateValue();
             String endDateValue = transactionQuery.getTransactionEndDateValue();
 
-            if(StringUtils.isEmpty(accountNo)){
+            if (StringUtils.isEmpty(accountNo)) {
                 msg.add(TransactionConstants.ERROR_QUERY_ACCOUNT_MISSING);
                 httpStatus = HttpStatus.BAD_REQUEST;
-            }else{
+            } else {
                 Query query = new Query();
                 query.addCriteria(Criteria.where(TransactionConstants.ACCOUNT_NO).is(accountNo));
-                if(!StringUtils.isEmpty(startDateValue)){
+                if (!StringUtils.isEmpty(startDateValue)) {
                     Date startDate = DateUtility.parseDateFromString(startDateValue,
                             DateFormatConstants.DATE_FORMAT_DD_MM_YYYY);
                     Date endDate = DateUtility.parseDateFromString(endDateValue,
@@ -154,62 +154,62 @@ public class TransactionOpsImpl {
                     Criteria startDateCriteria = Criteria.where(TransactionConstants.TRANSACTION_DATE).gte(startDate);
                     Criteria endDateCriteria = Criteria.where(TransactionConstants.TRANSACTION_DATE).lte(endDate);
 
-                    criteria.andOperator(Arrays.asList(startDateCriteria,endDateCriteria));
+                    criteria.andOperator(Arrays.asList(startDateCriteria, endDateCriteria));
                     query.addCriteria(criteria);
                 }
 
                 Pageable pageable = PageRequest.of(pageIndex, pageRecordCount, Sort.Direction.ASC, TransactionConstants.TRANSACTION_DATE);
                 query.with(pageable);
 
-                transactionList = mongoTemplate.find(query,Transaction.class);
-                if(!CollectionUtils.isEmpty(transactionList)){
+                transactionList = mongoTemplate.find(query, Transaction.class);
+                if (!CollectionUtils.isEmpty(transactionList)) {
                     transactionSummary = calculateTransactionSummary(transactionList);
                     transactionSummary.setPageIndex(pageIndex);
                     transactionSummary.setPageRecordCount(pageRecordCount);
                     msg.add(TransactionConstants.TRANSACTION_QUERY_SUCCESSFUL);
                     httpStatus = HttpStatus.OK;
-                }else{
+                } else {
                     msg.add(TransactionConstants.TRANSACTION_QUERY_NOT_FOUND);
                     httpStatus = HttpStatus.NOT_FOUND;
                 }
             }
-        }else{
+        } else {
             msg = errorMessage;
             httpStatus = HttpStatus.BAD_REQUEST;
         }
 
-        return ResponseUtility.buildResponse(msg,httpStatus,transactionSummary);
+        return ResponseUtility.buildResponse(msg, httpStatus, transactionSummary);
 
     }
 
-    public ResponseEntity<ResponseObject> findTransactionSummaryByUser(TransactionQuery transactionQuery){
+    public ResponseEntity<ResponseObject> findTransactionSummaryByUser(TransactionQuery transactionQuery) {
         List<String> msg = new ArrayList<>();
         HttpStatus httpStatus;
         TransactionSummary transactionSummary = new TransactionSummary();
 
         List<String> errorMessage = validateUtility.validateTransactionQueries(transactionQuery);
         List<Transaction> transactionList = new ArrayList<>();
-        int pageIndex = !ObjectUtils.isEmpty(transactionQuery.getPageIndex())?transactionQuery.getPageIndex():0;
-        int pageRecordCount = !ObjectUtils.isEmpty(transactionQuery.getPageRecordCount())?transactionQuery.getPageRecordCount():100;
+        int pageIndex = !ObjectUtils.isEmpty(transactionQuery.getPageIndex()) ? transactionQuery.getPageIndex() : 0;
+        int pageRecordCount = !ObjectUtils.isEmpty(transactionQuery.getPageRecordCount()) ? transactionQuery.getPageRecordCount() : 100;
 
-        if(CollectionUtils.isEmpty(errorMessage)){
+        if (CollectionUtils.isEmpty(errorMessage)) {
             String userID = transactionQuery.getUserId();
             String startDateValue = transactionQuery.getTransactionStartDateValue();
             String endDateValue = transactionQuery.getTransactionEndDateValue();
-            if(StringUtils.isEmpty(userID)){
+            if (StringUtils.isEmpty(userID)) {
                 msg.add(TransactionConstants.ERROR_QUERY_USERID_MISSING);
                 httpStatus = HttpStatus.BAD_REQUEST;
-            }else{
+            } else {
                 List<Account> accounts = accountOps.findAllCurrencyAccounts(userID);
-                if(CollectionUtils.isEmpty(accounts)){
+                if (CollectionUtils.isEmpty(accounts)) {
                     msg.add(TransactionConstants.ERROR_QUERY_USER_ACCOUNT_NOT_FOUND);
                     httpStatus = HttpStatus.BAD_REQUEST;
-                }else{
+                } else {
                     Query query = new Query();
                     List<String> accountNos = accounts.stream().
                             map(p -> p.getAccountNo()).collect(Collectors.toList());
                     query.addCriteria(Criteria.where(TransactionConstants.ACCOUNT_NO).in(accountNos));
-                    if(!StringUtils.isEmpty(startDateValue)){
+                    if (!StringUtils.isEmpty(startDateValue)) {
                         Date startDate = DateUtility.parseDateFromString(startDateValue,
                                 DateFormatConstants.DATE_FORMAT_DD_MM_YYYY);
                         Date endDate = DateUtility.parseDateFromString(endDateValue,
@@ -218,32 +218,32 @@ public class TransactionOpsImpl {
                         Criteria startDateCriteria = Criteria.where(TransactionConstants.TRANSACTION_DATE).gte(startDate);
                         Criteria endDateCriteria = Criteria.where(TransactionConstants.TRANSACTION_DATE).lte(endDate);
 
-                        criteria.andOperator(Arrays.asList(startDateCriteria,endDateCriteria));
+                        criteria.andOperator(Arrays.asList(startDateCriteria, endDateCriteria));
                         query.addCriteria(criteria);
                     }
 
                     Pageable pageable = PageRequest.of(pageIndex, pageRecordCount, Sort.Direction.ASC, TransactionConstants.TRANSACTION_DATE);
                     query.with(pageable);
 
-                    transactionList = mongoTemplate.find(query,Transaction.class);
-                    if(!CollectionUtils.isEmpty(transactionList)){
+                    transactionList = mongoTemplate.find(query, Transaction.class);
+                    if (!CollectionUtils.isEmpty(transactionList)) {
                         transactionSummary = calculateTransactionSummary(transactionList);
                         transactionSummary.setPageIndex(pageIndex);
                         transactionSummary.setPageRecordCount(pageRecordCount);
                         msg.add(TransactionConstants.TRANSACTION_QUERY_SUCCESSFUL);
                         httpStatus = HttpStatus.OK;
-                    }else{
+                    } else {
                         msg.add(TransactionConstants.TRANSACTION_QUERY_NOT_FOUND);
                         httpStatus = HttpStatus.NOT_FOUND;
                     }
                 }
             }
-        }else{
+        } else {
             msg = errorMessage;
             httpStatus = HttpStatus.BAD_REQUEST;
         }
 
-        return ResponseUtility.buildResponse(msg,httpStatus,transactionSummary);
+        return ResponseUtility.buildResponse(msg, httpStatus, transactionSummary);
     }
 
     public TransactionSummary calculateTransactionSummary(List<Transaction> transactionList) {
@@ -266,7 +266,7 @@ public class TransactionOpsImpl {
             transactionSummary.setCredit(creditValue);
             transactionSummary.setCreditInOriginalCurrency(creditTotal);
         }
-        if(!CollectionUtils.isEmpty(debitTransactions)){
+        if (!CollectionUtils.isEmpty(debitTransactions)) {
             Map<String, Double> debitTotal = compileCurrencyTotal(debitTransactions);
 
             Double debitValue = calculateTotalExchangeRate(debitTotal);
@@ -278,13 +278,13 @@ public class TransactionOpsImpl {
         return transactionSummary;
     }
 
-    public Map<String, Double> compileCurrencyTotal(List<Transaction> transactionList){
+    public Map<String, Double> compileCurrencyTotal(List<Transaction> transactionList) {
         Map<String, Double> currencyTotal = new HashMap<>();
-        for(Transaction transaction:transactionList){
-            if(!currencyTotal.containsKey(transaction.getCurrency())){
+        for (Transaction transaction : transactionList) {
+            if (!currencyTotal.containsKey(transaction.getCurrency())) {
                 currencyTotal.putIfAbsent(transaction.getCurrency(),
                         Math.abs(transaction.getAmount()));
-            }else{
+            } else {
                 Double totalAmount = currencyTotal.get(transaction.getCurrency()) + Math.abs(transaction.getAmount());
                 currencyTotal.put(transaction.getCurrency(),
                         totalAmount);
@@ -293,11 +293,11 @@ public class TransactionOpsImpl {
         return currencyTotal;
     }
 
-    public Double calculateTotalExchangeRate(Map<String, Double> currencyTotal){
+    public Double calculateTotalExchangeRate(Map<String, Double> currencyTotal) {
         Double result = 0.0;
 
-        for( Map.Entry<String,Double> entry : currencyTotal.entrySet()){
-            Double exchangeRateForCurrency = getExchangeRate(entry.getKey(),"USD");
+        for (Map.Entry<String, Double> entry : currencyTotal.entrySet()) {
+            Double exchangeRateForCurrency = getExchangeRate(entry.getKey(), "USD");
             Double exchangeValue = entry.getValue() * exchangeRateForCurrency;
             result += exchangeValue;
         }
@@ -305,24 +305,24 @@ public class TransactionOpsImpl {
         return result;
     }
 
-    public Double getExchangeRate(String base,String targetCurrency){
+    public Double getExchangeRate(String base, String targetCurrency) {
         Double result = 0.0;
         UriComponentsBuilder uri = UriComponentsBuilder.fromHttpUrl(externalUrlConfig.getExchangeRateUrl())
-                .queryParam("base",base)
-                .queryParam("symbols",targetCurrency);
+                .queryParam("base", base)
+                .queryParam("symbols", targetCurrency);
         log.info("Calling exchange rate API");
-        String exchangeRateResponse = (String) restService.callExternalAPI(uri.toUriString(),null,null, HttpMethod.GET,String.class);
-        if(!ObjectUtils.isEmpty(exchangeRateResponse)){
+        String exchangeRateResponse = (String) restService.callExternalAPI(uri.toUriString(), null, null, HttpMethod.GET, String.class);
+        if (!ObjectUtils.isEmpty(exchangeRateResponse)) {
             ObjectMapper mapper = new ObjectMapper();
-            try{
+            try {
                 JsonNode map = mapper.readTree(exchangeRateResponse);
                 JsonNode rates = map.get("rates");
-                if(!ObjectUtils.isEmpty(rates)){
+                if (!ObjectUtils.isEmpty(rates)) {
                     result = rates.get(targetCurrency).asDouble();
-                    log.info("Rate for {} from {} is {} on {}",targetCurrency,base,result, LocalDate.now());
+                    log.info("Rate for {} from {} is {} on {}", targetCurrency, base, result, LocalDate.now());
                 }
-            }catch(Exception ex){
-                log.error("Fail to parse exchange rate",ex);
+            } catch (Exception ex) {
+                log.error("Fail to parse exchange rate", ex);
             }
         }
         return result;

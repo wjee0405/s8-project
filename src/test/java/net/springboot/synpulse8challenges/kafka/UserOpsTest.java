@@ -34,12 +34,12 @@ public class UserOpsTest {
     UserOps userOps;
 
     @BeforeEach
-    public void setUp(){
+    public void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void testFindUser(){
+    public void testFindUser() {
         when(userRepositories.findByUserId(any())).thenReturn(Optional.empty());
         boolean result = userOps.findUser("123");
         Assertions.assertFalse(result);
@@ -51,21 +51,21 @@ public class UserOpsTest {
     }
 
     @Test
-    public void testCreateUser(){
+    public void testCreateUser() {
         ResponseEntity<ResponseObject> result = userOps.createUser("");
-        Assertions.assertEquals(ResponseConstants.USERID_CANNOT_BE_NULL,result.getBody().getMessage().get(0));
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST,result.getStatusCode());
+        Assertions.assertEquals(ResponseConstants.USERID_CANNOT_BE_NULL, result.getBody().getMessage().get(0));
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
 
         UserCreation userCreation = new UserCreation();
         when(userRepositories.findByUserId(any())).thenReturn(Optional.of(userCreation));
         result = userOps.createUser("123");
-        Assertions.assertEquals(ResponseConstants.USER_EXISTS,result.getBody().getMessage().get(0));
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST,result.getStatusCode());
+        Assertions.assertEquals(ResponseConstants.USER_EXISTS, result.getBody().getMessage().get(0));
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST, result.getStatusCode());
 
         when(userRepositories.findByUserId(any())).thenReturn(Optional.empty());
         result = userOps.createUser("123");
-        Assertions.assertEquals(ResponseConstants.USER_CREATION_SUCCESS,result.getBody().getMessage().get(0));
-        Assertions.assertEquals(HttpStatus.CREATED,result.getStatusCode());
-        verify(kafkaTemplate,times(1)).send(any(Message.class));
+        Assertions.assertEquals(ResponseConstants.USER_CREATION_SUCCESS, result.getBody().getMessage().get(0));
+        Assertions.assertEquals(HttpStatus.CREATED, result.getStatusCode());
+        verify(kafkaTemplate, times(1)).send(any(Message.class));
     }
 }
