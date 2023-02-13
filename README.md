@@ -36,6 +36,8 @@ findTransactionByUser
 findTransactionByAccount
 - Find all transactions performed by specific account
 
+ALL API CALL REQUIRED `jwtToken` HEADER with value `admin`
+
 # Repository layout
 `Config` contains configuration files including Factory for Kafka Producer and Consumer.
 It also contains all the configurations file for Swagger, Authority and other Bean Configurations.
